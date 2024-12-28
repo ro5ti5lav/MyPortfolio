@@ -2,11 +2,11 @@
   'use strict';
 
   var tmdb_proxy = {
-    name: 'TMDB Proxy',
-    version: '1.0.3',
-    description: 'Проксирование постеров и API сайта TMDB',
-    path_image: Lampa.Account.hasPremium() ? 'imagetmdb.cub.red/' : 'imagetmdb.com/',
-    path_api: 'apitmdb.' + (Lampa.Manifest && Lampa.Manifest.cub_domain ? Lampa.Manifest.cub_domain : 'cub.red') + '/3/'
+    name: 'TMDB Custom Proxy',
+    version: '1.0.0',
+    description: 'Собственный прокси для TMDB',
+    path_image: 'luminavista.ru/image/',
+    path_api: 'luminavista.ru/api/'
   };
 
   function filter(u) {
@@ -15,25 +15,24 @@
     return s + e;
   }
 
-  function email() {
-    return Lampa.Storage.get('account', '{}').email || '';
-  }
-
+  // Переопределяем методы TMDB
   Lampa.TMDB.image = function (url) {
-    var base = Lampa.Utils.protocol() + 'image.tmdb.org/' + url;
-    return Lampa.Utils.addUrlComponent(filter(Lampa.Storage.field('proxy_tmdb') ? Lampa.Utils.protocol() + tmdb_proxy.path_image + url : base), 'email=' + encodeURIComponent(email()));
+    return filter(Lampa.Utils.protocol() + tmdb_proxy.path_image + url);
   };
 
   Lampa.TMDB.api = function (url) {
-    var base = Lampa.Utils.protocol() + 'api.themoviedb.org/3/' + url;
-    return Lampa.Utils.addUrlComponent(filter(Lampa.Storage.field('proxy_tmdb') ? Lampa.Utils.protocol() + tmdb_proxy.path_api + url : base), 'email=' + encodeURIComponent(email()));
+    return filter(Lampa.Utils.protocol() + tmdb_proxy.path_api + url);
   };
 
+  // Отключаем встроенный прокси
+  Lampa.Storage.set('proxy_tmdb', false);
+
+  // Удаляем настройки прокси из интерфейса
   Lampa.Settings.listener.follow('open', function (e) {
     if (e.name == 'tmdb') {
       e.body.find('[data-parent="proxy"]').remove();
     }
   });
-  console.log('TMDB-Proxy', 'started, enabled:', Lampa.Storage.field('proxy_tmdb'));
 
+  console.log('TMDB-Custom-Proxy', 'started');
 })();
